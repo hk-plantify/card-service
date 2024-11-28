@@ -1,17 +1,24 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import List, Optional
 
 class CardBase(BaseModel):
     name: str
-    image: Optional[str] = None
-    company: str
-    type: str
+    image_url: Optional[str] = None
+    company_name: str
+    card_type: str
 
 class CardCreate(CardBase):
     pass
 
+class BenefitResponse(BaseModel):
+    benefit_description: str
+    
+    class Config:
+        orm_mode = True
+
 class CardResponse(CardBase):
-    id: int
+    card_id: int
+    benefits: List[BenefitResponse]
 
     class Config:
         orm_mode = True
