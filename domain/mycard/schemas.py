@@ -15,6 +15,7 @@ class BenefitResponse(BaseModel):
     
     class Config:
         orm_mode = True
+        from_attributes = True
 
 class CardResponse(CardBase):
     card_id: int
@@ -22,6 +23,7 @@ class CardResponse(CardBase):
 
     class Config:
         orm_mode = True
+        from_attributes = True
 
 class MyCardBase(BaseModel):
     card_id: int
@@ -35,3 +37,4 @@ class MyCardResponse(MyCardBase):
 
     class Config:
         orm_mode = True
+        from_attributes = True

@@ -23,15 +23,20 @@ def create_mycard(
     return ApiResponse.ok(data=created_mycard)
 
 @mycard_router.get("", response_model=ApiResponse[list[MyCardResponse]])
-def get_all_mycards(
-    db: Session = Depends(get_db),
-    user: AuthUserResponse = Depends(validate_token),
-):
+def get_all_mycards(db: Session = Depends(get_db)):
     mycards = crud.get_all_mycards(db=db)
-    for mycard in mycards:
-        mycard.card = get_card_with_benefits(db=db, card_id=mycard.card_id)
-    return ApiResponse.ok(data=mycards)
+    mycards_response = []
 
+    for mycard in mycards:
+        card_response = get_card_with_benefits(db=db, card_id=mycard.card_id)
+        mycard_response = MyCardResponse(
+            id=mycard.myCard_id,
+            card_id=mycard.card_id,
+            card=card_response
+        )
+        mycards_response.append(mycard_response)
+
+    return ApiResponse.ok(data=mycards_response)
 
 @mycard_router.delete("/{mycardId}", response_model=ApiResponse[MyCardResponse])
 def delete_mycard(
