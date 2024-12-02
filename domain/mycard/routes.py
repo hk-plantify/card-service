@@ -29,6 +29,7 @@ def get_all_mycards(db: Session = Depends(get_db)):
 
     for mycard in mycards:
         card_response = get_card_with_benefits(db=db, card_id=mycard.card_id)
+
         mycard_response = MyCardResponse(
             id=mycard.myCard_id,
             card_id=mycard.card_id,
@@ -51,14 +52,25 @@ def delete_mycard(
 
 card_router  = APIRouter(prefix="/v1/cards", tags=["Cards"])
 
-@card_router.get("/search", response_model=ApiResponse[list[CardResponse]])
+@card_router.get("/search")
 def search_cards_api(
     query: str,
     db: Session = Depends(get_db),
 ):
     print(f"Query received: {query}")
     cards = search_cards(db=db, query=query)
-    return ApiResponse.ok(data=cards)
+    simplified_cards = []
+    for card in cards:
+        benefits = [b.benefit_description for b in card.benefits]
+        simplified_cards.append({
+            "name": card.name,
+            "image_url": card.image_url,
+            "company_name": card.company_name,
+            "card_type": card.card_type,
+            "card_id": card.card_id,
+            "benefits": benefits
+        })
+    return ApiResponse.ok(data=simplified_cards)
 
 @card_router.get("/benefits/{cardId}", response_model=ApiResponse[CardResponse])
 def get_card_with_benefits_api(

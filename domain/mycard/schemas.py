@@ -19,7 +19,7 @@ class BenefitResponse(BaseModel):
 
 class CardResponse(CardBase):
     card_id: int
-    benefits: List[BenefitResponse]
+    benefits: List
 
     class Config:
         orm_mode = True
