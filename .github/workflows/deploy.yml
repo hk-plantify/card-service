@@ -32,8 +32,8 @@ jobs:
         
     - name: Build Docker image
       run: |
-        docker build . --file Dockerfile --tag ${{ secrets.DOCKER_USERNAME }}/chatbot:latest
+        docker build . --file Dockerfile --tag ${{ secrets.DOCKER_USERNAME }}/card-service:latest
 
     - name: Push Docker image
       run: |
-        docker push ${{ secrets.DOCKER_USERNAME }}/chatbot:latest
+        docker push ${{ secrets.DOCKER_USERNAME }}/card-service:latest
