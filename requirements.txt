@@ -8,3 +8,4 @@ jose
 python-jose[cryptography]
 uvicorn
 httpx
+jellyfish
