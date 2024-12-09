@@ -8,7 +8,6 @@ from domain.mycard.schemas import MyCardCreate, MyCardResponse, CardResponse
 from domain.mycard.crud import get_card_with_benefits, search_cards
 from common.response.response import ApiResponse
 from common.exception.exception import ApplicationException
-from urllib.parse import unquote
 
 mycard_router = APIRouter(prefix="/v1/mycards", tags=["MyCards"])
 
@@ -50,7 +49,11 @@ def delete_mycard(
         raise ApplicationException(status_code=404, detail="MyCard not found")
     return ApiResponse.ok(data=mycard)
 
-card_router  = APIRouter(prefix="/v1/cards", tags=["Cards"])
+@mycard_router.get("/healthz")
+def health_check_mycards():
+    return {"status": "ok", "service": "mycards"}
+
+card_router = APIRouter(prefix="/v1/cards", tags=["Cards"])
 
 @card_router.get("/search")
 def search_cards_api(
@@ -81,3 +84,7 @@ def get_card_with_benefits_api(
     if not card:
         raise ApplicationException(status_code=404, detail="Card not found")
     return ApiResponse.ok(data=card)
+
+@card_router.get("/healthz")
+def health_check_cards():
+    return {"status": "ok", "service": "cards"}
