@@ -49,7 +49,7 @@ def delete_mycard(
         raise ApplicationException(status_code=404, detail="MyCard not found")
     return ApiResponse.ok(data=mycard)
 
-@mycard_router.get("/healthz")
+@mycard_router.get("/healthz", response_model=ApiResponse[list[MyCardResponse]])
 def health_check_mycards():
     return {"status": "ok", "service": "mycards"}
 
@@ -85,6 +85,6 @@ def get_card_with_benefits_api(
         raise ApplicationException(status_code=404, detail="Card not found")
     return ApiResponse.ok(data=card)
 
-@card_router.get("/healthz")
+@card_router.get("/healthz", response_model=ApiResponse[list[MyCardResponse]])
 def health_check_cards():
     return {"status": "ok", "service": "cards"}
