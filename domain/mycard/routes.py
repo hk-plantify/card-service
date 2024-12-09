@@ -85,6 +85,6 @@ def get_card_with_benefits_api(
         raise ApplicationException(status_code=404, detail="Card not found")
     return ApiResponse.ok(data=card)
 
-@card_router.get("/healthz", response_model=ApiResponse[list[MyCardResponse]])
+@card_router.get("/healthz", response_model=ApiResponse[CardResponse])
 def health_check_cards():
     return {"status": "ok", "service": "cards"}
