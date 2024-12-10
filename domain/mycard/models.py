@@ -16,7 +16,7 @@ class Card(Base):
     name = Column(String(100), index=True)
     image = Column(String(255))
     company = Column(String(100), index=True)
-    card_type = Column(ENUM('credit', 'check'))  # Enum 타입 적용
+    type = Column(ENUM('credit', 'check'))  # Enum 타입 적용
     hash_key = Column(String(36), unique=True)
 
     benefits = relationship("Benefit", back_populates="card")

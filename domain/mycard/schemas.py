@@ -5,7 +5,7 @@ class CardBase(BaseModel):
     name: str
     image: Optional[str] = None
     company: str
-    card_type: str
+    type: str
 
 class CardCreate(CardBase):
     pass

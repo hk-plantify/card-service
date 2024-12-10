@@ -34,7 +34,7 @@ def get_card_with_benefits(db: Session, card_id: int):
         name=card.name,
         image=card.image,
         company=card.company,
-        card_type=card.card_type,
+        type=card.type,
         benefits=benefits_response
     )
     return card_response
