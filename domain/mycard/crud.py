@@ -50,23 +50,21 @@ def calculate_similarity_jellyfish(query, text):
     return similarity
 
 def search_cards(db: Session, query: str):
-    # 짧은 쿼리는 간단한 필터로 처리
-    if len(query) < 3:
-        return db.query(Card).filter(
-            (Card.name.ilike(f"%{query}%")) | (Card.company.ilike(f"%{query}%"))
-        ).limit(100).all()  # 제한 추가
+    # 방어적 쿼리 검사
+    if not query or len(query.strip()) < 3:
+        return []
 
     query_trigrams = generate_trigrams(query)
 
     # 데이터베이스에서 초기 필터링
     filtered_cards = db.query(Card).filter(
         (Card.name.ilike(f"%{query}%")) | (Card.company.ilike(f"%{query}%"))
-    ).limit(100).all()  # 초기 결과를 제한
+    ).limit(20).all()  # 제한을 더 낮게 설정
 
     # 정확히 포함된 결과를 우선 수집
     exact_matches = [
         card for card in filtered_cards
-        if query in card.name or query in card.company
+        if query.lower() in card.name.lower() or query.lower() in card.company.lower()
     ]
 
     # 트라이그램 기반 매칭
@@ -86,29 +84,20 @@ def search_cards(db: Session, query: str):
     # 유사도 계산 및 랭킹
     ranked_cards = []
     for card in sorted_candidates:
+        if abs(len(query) - len(card.name)) > 5:  # 길이 차이가 너무 크면 건너뜀
+            continue
         name_similarity = calculate_similarity_jellyfish(query, card.name)
         company_similarity = calculate_similarity_jellyfish(query, card.company)
         score = max(name_similarity, company_similarity)
-        if query in card.name:
+        if query.lower() in card.name.lower():
             score += 10  # 이름에 정확히 포함된 경우 가중치 부여
-        if query in card.company:
+        if query.lower() in card.company.lower():
             score += 10  # 회사 이름에 정확히 포함된 경우 가중치 부여
         ranked_cards.append((card, score))
 
     ranked_cards.sort(key=lambda x: x[1], reverse=True)
 
     # 최종 결과 병합
-    seen = set()
-    final_result = []
-
-    for card in exact_matches:
-        if card not in seen:
-            final_result.append(card)
-            seen.add(card)
-
-    for card, _ in ranked_cards:
-        if card not in seen:
-            final_result.append(card)
-            seen.add(card)
+    final_result = list(dict.fromkeys(exact_matches + [card for card, _ in ranked_cards]))
 
     return final_result
