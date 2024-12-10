@@ -3,15 +3,15 @@ from typing import List, Optional
 
 class CardBase(BaseModel):
     name: str
-    image_url: Optional[str] = None
-    company_name: str
+    image: Optional[str] = None
+    company: str
     card_type: str
 
 class CardCreate(CardBase):
     pass
 
 class BenefitResponse(BaseModel):
-    benefit_description: str
+    title: str
     
     class Config:
         orm_mode = True
