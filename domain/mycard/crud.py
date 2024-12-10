@@ -25,15 +25,15 @@ def get_card_with_benefits(db: Session, card_id: int):
     card = db.query(Card).filter(Card.card_id == card_id).first()
     if not card:
         return None
-    # benefits에서 description만 추출
+    # benefits에서 title만 추출
     benefits = db.query(Benefit).filter(Benefit.card_id == card_id).all()
-    benefits_response = [benefit.benefit_description for benefit in benefits]
+    benefits_response = [benefit.title for benefit in benefits]
 
     card_response = CardResponse(
         card_id=card.card_id,
         name=card.name,
-        image_url=card.image_url,
-        company_name=card.company_name,
+        image=card.image,
+        company=card.company,
         card_type=card.card_type,
         benefits=benefits_response
     )
@@ -52,18 +52,18 @@ def calculate_similarity_jellyfish(query, text):
 def search_cards(db: Session, query: str):
     if len(query) < 3:
         return db.query(Card).filter(
-            (Card.name.ilike(f"%{query}%")) | (Card.company_name.ilike(f"%{query}%"))
+            (Card.name.ilike(f"%{query}%")) | (Card.company.ilike(f"%{query}%"))
         ).all()
     
     query_trigrams = generate_trigrams(query)  # Trigram 생성
 
     filtered_cards = db.query(Card).filter(
-        (Card.name.ilike(f"%{query}%")) | (Card.company_name.ilike(f"%{query}%"))
+        (Card.name.ilike(f"%{query}%")) | (Card.company.ilike(f"%{query}%"))
     ).all()
 
     trigram_matches = defaultdict(list)
     for card in filtered_cards:
-        card_trigrams = generate_trigrams(card.name) | generate_trigrams(card.company_name)
+        card_trigrams = generate_trigrams(card.name) | generate_trigrams(card.company)
         intersection = query_trigrams & card_trigrams  # Trigram 교집합 계산
         if intersection:
             trigram_matches[len(intersection)].append(card)
@@ -76,7 +76,7 @@ def search_cards(db: Session, query: str):
     ranked_cards = []
     for card in sorted_candidates:
         name_similarity = calculate_similarity_jellyfish(query, card.name)
-        company_similarity = calculate_similarity_jellyfish(query, card.company_name)
+        company_similarity = calculate_similarity_jellyfish(query, card.company)
         score = max(name_similarity, company_similarity)
         ranked_cards.append((card, score))
 

@@ -64,11 +64,11 @@ def search_cards_api(
     cards = search_cards(db=db, query=query)
     simplified_cards = []
     for card in cards:
-        benefits = [b.benefit_description for b in card.benefits]
+        benefits = [b.title for b in card.benefits]
         simplified_cards.append({
             "name": card.name,
-            "image_url": card.image_url,
-            "company_name": card.company_name,
+            "image": card.image,
+            "company_name": card.company,
             "card_type": card.card_type,
             "card_id": card.card_id,
             "benefits": benefits
