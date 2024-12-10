@@ -50,22 +50,26 @@ def calculate_similarity_jellyfish(query, text):
     return similarity
 
 def search_cards(db: Session, query: str):
+    # 짧은 쿼리는 간단한 필터로 처리
     if len(query) < 3:
         return db.query(Card).filter(
             (Card.name.ilike(f"%{query}%")) | (Card.company.ilike(f"%{query}%"))
-        ).all()
+        ).limit(100).all()  # 제한 추가
 
     query_trigrams = generate_trigrams(query)
 
+    # 데이터베이스에서 초기 필터링
     filtered_cards = db.query(Card).filter(
         (Card.name.ilike(f"%{query}%")) | (Card.company.ilike(f"%{query}%"))
-    ).all()
+    ).limit(100).all()  # 초기 결과를 제한
 
+    # 정확히 포함된 결과를 우선 수집
     exact_matches = [
         card for card in filtered_cards
         if query in card.name or query in card.company
     ]
 
+    # 트라이그램 기반 매칭
     trigram_matches = defaultdict(list)
     for card in filtered_cards:
         card_trigrams = generate_trigrams(card.name) | generate_trigrams(card.company)
@@ -73,11 +77,13 @@ def search_cards(db: Session, query: str):
         if intersection:
             trigram_matches[len(intersection)].append(card)
 
+    # 트라이그램 교집합 크기에 따라 정렬
     sorted_candidates = [
         card for _, cards in sorted(trigram_matches.items(), key=lambda x: x[0], reverse=True)
         for card in cards
     ]
 
+    # 유사도 계산 및 랭킹
     ranked_cards = []
     for card in sorted_candidates:
         name_similarity = calculate_similarity_jellyfish(query, card.name)
@@ -91,4 +97,18 @@ def search_cards(db: Session, query: str):
 
     ranked_cards.sort(key=lambda x: x[1], reverse=True)
 
-    return exact_matches + [card for card, _ in ranked_cards if card not in exact_matches]
+    # 최종 결과 병합
+    seen = set()
+    final_result = []
+
+    for card in exact_matches:
+        if card not in seen:
+            final_result.append(card)
+            seen.add(card)
+
+    for card, _ in ranked_cards:
+        if card not in seen:
+            final_result.append(card)
+            seen.add(card)
+
+    return final_result
