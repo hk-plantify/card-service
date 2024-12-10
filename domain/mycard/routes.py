@@ -69,7 +69,7 @@ def search_cards_api(
             "name": card.name,
             "image": card.image,
             "company_name": card.company,
-            "card_type": card.card_type,
+            "type": card.type,
             "card_id": card.card_id,
             "benefits": benefits
         })
