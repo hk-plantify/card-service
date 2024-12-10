@@ -68,7 +68,7 @@ def search_cards_api(
         simplified_cards.append({
             "name": card.name,
             "image": card.image,
-            "company_name": card.company,
+            "company": card.company,
             "type": card.type,
             "card_id": card.card_id,
             "benefits": benefits
