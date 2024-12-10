@@ -54,17 +54,22 @@ def search_cards(db: Session, query: str):
         return db.query(Card).filter(
             (Card.name.ilike(f"%{query}%")) | (Card.company.ilike(f"%{query}%"))
         ).all()
-    
-    query_trigrams = generate_trigrams(query)  # Trigram 생성
+
+    query_trigrams = generate_trigrams(query)
 
     filtered_cards = db.query(Card).filter(
         (Card.name.ilike(f"%{query}%")) | (Card.company.ilike(f"%{query}%"))
     ).all()
 
+    exact_matches = [
+        card for card in filtered_cards
+        if query in card.name or query in card.company
+    ]
+
     trigram_matches = defaultdict(list)
     for card in filtered_cards:
         card_trigrams = generate_trigrams(card.name) | generate_trigrams(card.company)
-        intersection = query_trigrams & card_trigrams  # Trigram 교집합 계산
+        intersection = query_trigrams & card_trigrams
         if intersection:
             trigram_matches[len(intersection)].append(card)
 
@@ -78,8 +83,12 @@ def search_cards(db: Session, query: str):
         name_similarity = calculate_similarity_jellyfish(query, card.name)
         company_similarity = calculate_similarity_jellyfish(query, card.company)
         score = max(name_similarity, company_similarity)
+        if query in card.name:
+            score += 10  # 이름에 정확히 포함된 경우 가중치 부여
+        if query in card.company:
+            score += 10  # 회사 이름에 정확히 포함된 경우 가중치 부여
         ranked_cards.append((card, score))
 
     ranked_cards.sort(key=lambda x: x[1], reverse=True)
 
-    return [card for card, score in ranked_cards]
+    return exact_matches + [card for card, _ in ranked_cards if card not in exact_matches]
