@@ -51,7 +51,7 @@ def calculate_similarity_jellyfish(query, text):
 
 def search_cards(db: Session, query: str):
     # 방어적 쿼리 검사
-    if not query or len(query.strip()) < 3:
+    if not query or len(query.strip()) < 1:
         return []
 
     query_trigrams = generate_trigrams(query)
@@ -59,7 +59,7 @@ def search_cards(db: Session, query: str):
     # 데이터베이스에서 초기 필터링
     filtered_cards = db.query(Card).filter(
         (Card.name.ilike(f"%{query}%")) | (Card.company.ilike(f"%{query}%"))
-    ).limit(20).all()  # 제한을 더 낮게 설정
+    ).limit(50).all()  # 제한을 더 낮게 설정
 
     # 정확히 포함된 결과를 우선 수집
     exact_matches = [
