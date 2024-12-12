@@ -84,8 +84,6 @@ def search_cards(db: Session, query: str):
     # 유사도 계산 및 랭킹
     ranked_cards = []
     for card in sorted_candidates:
-        if abs(len(query) - len(card.name)) > 5:  # 길이 차이가 너무 크면 건너뜀
-            continue
         name_similarity = calculate_similarity_jellyfish(query, card.name)
         company_similarity = calculate_similarity_jellyfish(query, card.company)
         score = max(name_similarity, company_similarity)

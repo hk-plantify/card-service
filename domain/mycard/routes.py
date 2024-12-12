@@ -21,6 +21,17 @@ def create_mycard(
     created_mycard = crud.create_mycard(db=db, mycard=mycard)
     return ApiResponse.ok(data=created_mycard)
 
+@mycard_router.post("/{cardId}/add", response_model=ApiResponse[MyCardResponse])
+def add_card_to_mycards(
+    card_id: int,
+    db: Session = Depends(get_db),
+    user: AuthUserResponse = Depends(validate_token),
+):
+    # MyCard 객체 생성
+    mycard_data = MyCardCreate(card_id=card_id, user_id=user.userId)
+    created_mycard = crud.create_mycard(db=db, mycard=mycard_data)
+    return ApiResponse.ok(data=created_mycard)
+
 @mycard_router.get("", response_model=ApiResponse[list[MyCardResponse]])
 def get_all_mycards(db: Session = Depends(get_db)):
     mycards = crud.get_all_mycards(db=db)
@@ -55,11 +66,8 @@ def health_check_mycards():
 
 card_router = APIRouter(prefix="/v1/cards", tags=["Cards"])
 
-@card_router.get("/search")
-def search_cards_api(
-    query: str,
-    db: Session = Depends(get_db),
-):
+@card_router.get("/search", response_model=ApiResponse[list[dict]])
+def search_cards_api(query: str, db: Session = Depends(get_db)):
     print(f"Query received: {query}")
     cards = search_cards(db=db, query=query)
     simplified_cards = []
@@ -70,8 +78,9 @@ def search_cards_api(
             "image": card.image,
             "company": card.company,
             "type": card.type,
-            "card_id": card.card_id,
-            "benefits": benefits
+            "card_id": card.card_id,  # 카드 ID를 반환
+            "benefits": benefits,
+            "addable": True  # UI에서 추가 가능 여부를 명시
         })
     return ApiResponse.ok(data=simplified_cards)
 
