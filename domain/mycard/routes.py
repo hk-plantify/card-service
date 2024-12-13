@@ -54,13 +54,11 @@ def get_all_mycards(db: Session = Depends(get_db)):
 
 @mycard_router.delete("/{mycard_id}", response_model=ApiResponse[MyCardResponse])
 def delete_mycard(
-    mycard_id: int,  # 경로 변수 이름과 매개변수 이름 일치
+    mycard_id: int,
     db: Session = Depends(get_db),
     user: AuthUserResponse = Depends(validate_token)
 ):
-    mycard = crud.delete_mycard(db=db, mycard_id=mycard_id, user_id=user.userId)  # user_id 추가
-    if not mycard:
-        raise ApplicationException(status_code=404, detail="MyCard not found")
+    mycard = crud.delete_mycard(db=db, mycard_id=mycard_id, user_id=user.userId)
     return ApiResponse.ok(data=mycard)
 
 @mycard_router.get("/healthz", response_model=ApiResponse[dict])

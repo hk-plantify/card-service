@@ -3,6 +3,7 @@ from domain.mycard.models import MyCard, Card, Benefit
 from domain.mycard.schemas import MyCardCreate, BenefitResponse, CardResponse
 import jellyfish
 from collections import defaultdict
+from fastapi import HTTPException
 
 def create_mycard(db: Session, mycard: MyCardCreate, user_id: int):
     db_mycard = MyCard(card_id=mycard.card_id, user_id=user_id)
@@ -15,9 +16,11 @@ def get_all_mycards(db: Session):
     return db.query(MyCard).all()
 
 def delete_mycard(db: Session, mycard_id: int, user_id: int):
-    db_mycard = db.query(MyCard).filter(MyCard.myCard_id == mycard_id, MyCard.user_id == user_id).first()
+    db_mycard = db.query(MyCard).filter(
+        MyCard.myCard_id == mycard_id, MyCard.user_id == user_id
+    ).first()
     if not db_mycard:
-        raise ValueError("MyCard not found or not authorized.")
+        raise HTTPException(status_code=404, detail="MyCard not found or not authorized.")
     db.delete(db_mycard)
     db.commit()
     return db_mycard
