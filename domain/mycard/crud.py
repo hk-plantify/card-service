@@ -4,8 +4,8 @@ from domain.mycard.schemas import MyCardCreate, BenefitResponse, CardResponse
 import jellyfish
 from collections import defaultdict
 
-def create_mycard(db: Session, mycard: MyCardCreate):
-    db_mycard = MyCard(**mycard.dict())
+def create_mycard(db: Session, mycard: MyCardCreate, user_id: int):
+    db_mycard = MyCard(card_id=mycard.card_id, user_id=user_id)
     db.add(db_mycard)
     db.commit()
     db.refresh(db_mycard)
