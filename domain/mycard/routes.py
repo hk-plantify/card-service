@@ -58,6 +58,7 @@ def delete_mycard(
     db: Session = Depends(get_db),
     user: AuthUserResponse = Depends(validate_token)
 ):
+    print(f"DELETE request received with myCard_id={myCard_id}, user_id={user.userId}")
     mycard = crud.delete_mycard(db=db, mycard_id=myCard_id, user_id=user.userId)
     return ApiResponse.ok(data=mycard)
 

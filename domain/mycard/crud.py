@@ -20,7 +20,10 @@ def delete_mycard(db: Session, mycard_id: int, user_id: int):
         MyCard.myCard_id == mycard_id, MyCard.user_id == user_id
     ).first()
     if not db_mycard:
-        raise HTTPException(status_code=404, detail="MyCard not found or not authorized.")
+        raise HTTPException(
+            status_code=404,
+            detail=f"Debug: MyCard not found. myCard_id={mycard_id}, user_id={user_id}"
+        )
     db.delete(db_mycard)
     db.commit()
     return db_mycard
