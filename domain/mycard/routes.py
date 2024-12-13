@@ -17,7 +17,7 @@ def create_mycard(
     db: Session = Depends(get_db),
     user: AuthUserResponse = Depends(validate_token),
 ):
-    # 중복 방지 로직
+    
     existing_mycard = db.query(crud.MyCard).filter(
         crud.MyCard.card_id == mycard.card_id,
         crud.MyCard.user_id == user.userId
