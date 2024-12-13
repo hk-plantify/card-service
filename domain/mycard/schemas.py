@@ -28,7 +28,7 @@ class MyCardBase(BaseModel):
     card_id: int
 
 class MyCardCreate(MyCardBase):
-    user_id: int
+    pass
 
 class MyCardResponse(MyCardBase):
     id: int
