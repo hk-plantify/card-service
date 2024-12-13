@@ -29,8 +29,8 @@ class MyCardBase(BaseModel):
 class MyCardCreate(MyCardBase):
     pass
 
-class MyCardResponse(MyCardBase):
-    id: int
+class MyCardResponse(BaseModel):
+    myCard_id: int
     card: Optional[CardResponse]
 
     class Config:

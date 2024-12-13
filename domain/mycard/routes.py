@@ -52,13 +52,13 @@ def get_all_mycards(db: Session = Depends(get_db)):
 
     return ApiResponse.ok(data=mycards_response)
 
-@mycard_router.delete("/{mycard_id}", response_model=ApiResponse[MyCardResponse])
+@mycard_router.delete("/{myCard_id}", response_model=ApiResponse[MyCardResponse])
 def delete_mycard(
-    mycard_id: int,
+    myCard_id: int,
     db: Session = Depends(get_db),
     user: AuthUserResponse = Depends(validate_token)
 ):
-    mycard = crud.delete_mycard(db=db, mycard_id=mycard_id, user_id=user.userId)
+    mycard = crud.delete_mycard(db=db, mycard_id=myCard_id, user_id=user.userId)
     return ApiResponse.ok(data=mycard)
 
 @mycard_router.get("/healthz", response_model=ApiResponse[dict])
