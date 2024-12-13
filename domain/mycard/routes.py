@@ -17,17 +17,23 @@ def create_mycard(
     db: Session = Depends(get_db),
     user: AuthUserResponse = Depends(validate_token),
 ):
-    # 기존 카드가 있는지 확인
-    existing_mycard = db.query(crud.MyCard).filter(
-        crud.MyCard.card_id == mycard.card_id,
-        crud.MyCard.user_id == user.userId
-    ).first()
-    if existing_mycard:
-        raise ApplicationException(status_code=400, detail="Card already added")
-
-    # MyCardCreate 객체를 직접 전달
     created_mycard = crud.create_mycard(db=db, mycard=mycard, user_id=user.userId)
-    return ApiResponse.ok(data=created_mycard)
+    card = created_mycard.card
+    
+    card_response = CardResponse(
+        card_id=card.card_id,
+        name=card.name,
+        image=card.image,
+        company=card.company,
+        type=card.type,
+        benefits=[benefit.title for benefit in card.benefits]
+    )
+    response_data = MyCardResponse(
+        id=created_mycard.myCard_id,
+        card_id=created_mycard.card_id,
+        card=card_response
+    )
+    return ApiResponse.ok(data=response_data)
 
 @mycard_router.get("", response_model=ApiResponse[list[MyCardResponse]])
 def get_all_mycards(db: Session = Depends(get_db)):

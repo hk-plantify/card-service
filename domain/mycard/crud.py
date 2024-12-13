@@ -14,11 +14,12 @@ def create_mycard(db: Session, mycard: MyCardCreate, user_id: int):
 def get_all_mycards(db: Session):
     return db.query(MyCard).all()
 
-def delete_mycard(db: Session, mycard_id: int):
-    db_mycard = db.query(MyCard).filter(MyCard.myCard_id == mycard_id).first()
-    if db_mycard:
-        db.delete(db_mycard)
-        db.commit()
+def delete_mycard(db: Session, mycard_id: int, user_id: int):
+    db_mycard = db.query(MyCard).filter(MyCard.myCard_id == mycard_id, MyCard.user_id == user_id).first()
+    if not db_mycard:
+        raise ValueError("MyCard not found or not authorized.")
+    db.delete(db_mycard)
+    db.commit()
     return db_mycard
 
 def get_card_with_benefits(db: Session, card_id: int):
