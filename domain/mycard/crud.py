@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
 from domain.mycard.models import MyCard, Card, Benefit
 from domain.mycard.schemas import MyCardCreate, BenefitResponse, CardResponse
-import jellyfish
 from collections import defaultdict
+from rapidfuzz import fuzz
 from fastapi import HTTPException
 
 def create_mycard(db: Session, mycard: MyCardCreate, user_id: int):
@@ -50,17 +50,15 @@ def generate_trigrams(text):
     text = text.lower()
     return {text[i:i+3] for i in range(len(text) - 2)}
 
-def calculate_similarity_jellyfish(query, text):
-    distance = jellyfish.damerau_levenshtein_distance(query.lower(), text.lower())
-    max_len = max(len(query), len(text))
-    similarity = (1 - distance / max_len) * 100 
-    return similarity
+def calculate_similarity(query, text):
+    return fuzz.partial_ratio(query.lower(), text.lower())
 
 def search_cards(db: Session, query: str):
     # 방어적 쿼리 검사
     if not query or len(query.strip()) < 1:
         return []
 
+    query = query.strip()
     query_trigrams = generate_trigrams(query)
 
     # 데이터베이스에서 초기 필터링
@@ -91,18 +89,28 @@ def search_cards(db: Session, query: str):
     # 유사도 계산 및 랭킹
     ranked_cards = []
     for card in sorted_candidates:
-        name_similarity = calculate_similarity_jellyfish(query, card.name)
-        company_similarity = calculate_similarity_jellyfish(query, card.company)
+        name_similarity = calculate_similarity(query, card.name)
+        company_similarity = calculate_similarity(query, card.company)
         score = max(name_similarity, company_similarity)
+
+        # 이름 또는 회사 이름에 정확히 포함된 경우 가중치 추가
         if query.lower() in card.name.lower():
-            score += 10  # 이름에 정확히 포함된 경우 가중치 부여
+            score += 15  # 이름에 정확히 포함된 경우 가중치 부여
         if query.lower() in card.company.lower():
             score += 10  # 회사 이름에 정확히 포함된 경우 가중치 부여
+
+        # 이름 또는 회사 이름이 검색어로 시작하는 경우 추가 가중치
+        if card.name.lower().startswith(query.lower()):
+            score += 10
+        if card.company.lower().startswith(query.lower()):
+            score += 5
+
         ranked_cards.append((card, score))
 
+    # 점수 순으로 정렬
     ranked_cards.sort(key=lambda x: x[1], reverse=True)
 
-    # 최종 결과 병합
+    # 최종 결과 병합 (중복 제거)
     final_result = list(dict.fromkeys(exact_matches + [card for card, _ in ranked_cards]))
 
     return final_result
