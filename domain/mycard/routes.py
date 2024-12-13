@@ -25,7 +25,6 @@ def create_mycard(
     if existing_mycard:
         raise ApplicationException(status_code=400, detail="Card already added")
 
-    # user_id를 입력 데이터에 추가
     db_mycard = crud.MyCard(card_id=mycard.card_id, user_id=user.userId)
     created_mycard = crud.create_mycard(db=db, mycard=db_mycard)
     return ApiResponse.ok(data=created_mycard)
