@@ -41,4 +41,4 @@ class MyCard(Base):
     user_id = Column(Integer, index=True)
     card_id = Column(INTEGER(unsigned=True), ForeignKey('card.card_id'))
 
-    card = relationship("Card", back_populates="mycards")
+    card = relationship("Card", back_populates="mycards", lazy="joined")
