@@ -58,9 +58,23 @@ def delete_mycard(
     db: Session = Depends(get_db),
     user: AuthUserResponse = Depends(validate_token)
 ):
-    print(f"DELETE request received with myCard_id={myCard_id}, user_id={user.userId}")
+    # MyCard 삭제
     mycard = crud.delete_mycard(db=db, mycard_id=myCard_id, user_id=user.userId)
-    return ApiResponse.ok(data=mycard)
+
+    # Card 데이터 직렬화
+    response_data = MyCardResponse(
+        myCard_id=mycard.myCard_id,
+        card_id=mycard.card_id,
+        card=CardResponse(
+            card_id=mycard.card.card_id,
+            name=mycard.card.name,
+            image=mycard.card.image,
+            company=mycard.card.company,
+            type=mycard.card.type,
+            benefits=[benefit.title for benefit in mycard.card.benefits]  # 변환
+        )
+    )
+    return ApiResponse.ok(data=response_data)
 
 @mycard_router.get("/healthz", response_model=ApiResponse[dict])
 def health_check_mycards():
