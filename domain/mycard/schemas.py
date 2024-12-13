@@ -19,11 +19,10 @@ class BenefitResponse(BaseModel):
 
 class CardResponse(CardBase):
     card_id: int
-    benefits: List
+    benefits: List[str]
 
     class Config:
         orm_mode = True
-        from_attributes = True
 
 class MyCardBase(BaseModel):
     card_id: int
