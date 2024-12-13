@@ -19,7 +19,7 @@ def create_mycard(
 ):
     created_mycard = crud.create_mycard(db=db, mycard=mycard, user_id=user.userId)
     card = created_mycard.card
-    
+
     card_response = CardResponse(
         card_id=card.card_id,
         name=card.name,
@@ -52,13 +52,13 @@ def get_all_mycards(db: Session = Depends(get_db)):
 
     return ApiResponse.ok(data=mycards_response)
 
-@mycard_router.delete("/{mycardId}", response_model=ApiResponse[MyCardResponse])
+@mycard_router.delete("/{mycard_id}", response_model=ApiResponse[MyCardResponse])
 def delete_mycard(
-    mycard_id: int,
+    mycard_id: int,  # 경로 변수 이름과 매개변수 이름 일치
     db: Session = Depends(get_db),
     user: AuthUserResponse = Depends(validate_token)
 ):
-    mycard = crud.delete_mycard(db=db, mycard_id=mycard_id)
+    mycard = crud.delete_mycard(db=db, mycard_id=mycard_id, user_id=user.userId)  # user_id 추가
     if not mycard:
         raise ApplicationException(status_code=404, detail="MyCard not found")
     return ApiResponse.ok(data=mycard)
