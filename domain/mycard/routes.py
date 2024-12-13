@@ -17,7 +17,7 @@ def create_mycard(
     db: Session = Depends(get_db),
     user: AuthUserResponse = Depends(validate_token),
 ):
-    
+    # 기존 카드가 있는지 확인
     existing_mycard = db.query(crud.MyCard).filter(
         crud.MyCard.card_id == mycard.card_id,
         crud.MyCard.user_id == user.userId
@@ -25,8 +25,8 @@ def create_mycard(
     if existing_mycard:
         raise ApplicationException(status_code=400, detail="Card already added")
 
-    db_mycard = crud.MyCard(card_id=mycard.card_id, user_id=user.userId)
-    created_mycard = crud.create_mycard(db=db, mycard=db_mycard)
+    # MyCardCreate 객체를 직접 전달
+    created_mycard = crud.create_mycard(db=db, mycard=mycard, user_id=user.userId)
     return ApiResponse.ok(data=created_mycard)
 
 @mycard_router.get("", response_model=ApiResponse[list[MyCardResponse]])
