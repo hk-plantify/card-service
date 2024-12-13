@@ -32,7 +32,7 @@ class MyCardCreate(MyCardBase):
 class MyCardResponse(BaseModel):
     myCard_id: int
     card_id: int
-    card: Optional[CardResponse]
+    card: Optional[CardResponse] = None
 
     class Config:
         orm_mode = True
