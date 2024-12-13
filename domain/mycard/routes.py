@@ -29,7 +29,7 @@ def create_mycard(
         benefits=[benefit.title for benefit in card.benefits]
     )
     response_data = MyCardResponse(
-        id=created_mycard.myCard_id,
+        myCard_id=created_mycard.myCard_id,
         card_id=created_mycard.card_id,
         card=card_response
     )
@@ -44,7 +44,7 @@ def get_all_mycards(db: Session = Depends(get_db)):
         card_response = get_card_with_benefits(db=db, card_id=mycard.card_id)
 
         mycard_response = MyCardResponse(
-            id=mycard.myCard_id,
+            myCard_id=mycard.myCard_id,
             card_id=mycard.card_id,
             card=card_response
         )
