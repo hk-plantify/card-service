@@ -17,19 +17,16 @@ def create_mycard(
     db: Session = Depends(get_db),
     user: AuthUserResponse = Depends(validate_token),
 ):
+    # 중복 방지 로직 추가
+    existing_mycard = db.query(crud.MyCard).filter(
+        crud.MyCard.card_id == mycard.card_id,
+        crud.MyCard.user_id == user.userId
+    ).first()
+    if existing_mycard:
+        raise ApplicationException(status_code=400, detail="Card already added")
+
     mycard.user_id = user.userId
     created_mycard = crud.create_mycard(db=db, mycard=mycard)
-    return ApiResponse.ok(data=created_mycard)
-
-@mycard_router.post("/{cardId}/add", response_model=ApiResponse[MyCardResponse])
-def add_card_to_mycards(
-    card_id: int,
-    db: Session = Depends(get_db),
-    user: AuthUserResponse = Depends(validate_token),
-):
-    # MyCard 객체 생성
-    mycard_data = MyCardCreate(card_id=card_id, user_id=user.userId)
-    created_mycard = crud.create_mycard(db=db, mycard=mycard_data)
     return ApiResponse.ok(data=created_mycard)
 
 @mycard_router.get("", response_model=ApiResponse[list[MyCardResponse]])
@@ -60,28 +57,41 @@ def delete_mycard(
         raise ApplicationException(status_code=404, detail="MyCard not found")
     return ApiResponse.ok(data=mycard)
 
-@mycard_router.get("/healthz", response_model=ApiResponse[list[MyCardResponse]])
+@mycard_router.get("/healthz", response_model=ApiResponse[dict])
 def health_check_mycards():
     return {"status": "ok", "service": "mycards"}
 
 card_router = APIRouter(prefix="/v1/cards", tags=["Cards"])
 
 @card_router.get("/search", response_model=ApiResponse[list[dict]])
-def search_cards_api(query: str, db: Session = Depends(get_db)):
-    print(f"Query received: {query}")
+def search_cards_api(
+    query: str,
+    db: Session = Depends(get_db),
+    user: AuthUserResponse = Depends(validate_token),
+):
+    """
+    검색된 카드와 함께 추가 가능 여부 반환.
+    """
+    # 검색된 카드 목록
     cards = search_cards(db=db, query=query)
+
+    # 사용자가 이미 MyCards에 추가한 카드 목록
+    user_mycards = crud.get_all_mycards(db=db)
+    user_card_ids = {mycard.card_id for mycard in user_mycards}
+
     simplified_cards = []
     for card in cards:
-        benefits = [b.title for b in card.benefits]
+        # 카드 정보에 addable 여부 추가
         simplified_cards.append({
             "name": card.name,
             "image": card.image,
             "company": card.company,
             "type": card.type,
-            "card_id": card.card_id,  # 카드 ID를 반환
-            "benefits": benefits,
-            "addable": True  # UI에서 추가 가능 여부를 명시
+            "card_id": card.card_id,
+            "benefits": [benefit.title for benefit in card.benefits],
+            "addable": card.card_id not in user_card_ids
         })
+
     return ApiResponse.ok(data=simplified_cards)
 
 @card_router.get("/benefits/{cardId}", response_model=ApiResponse[CardResponse])
@@ -94,6 +104,6 @@ def get_card_with_benefits_api(
         raise ApplicationException(status_code=404, detail="Card not found")
     return ApiResponse.ok(data=card)
 
-@card_router.get("/healthz", response_model=ApiResponse[CardResponse])
+@card_router.get("/healthz", response_model=ApiResponse[dict])
 def health_check_cards():
     return {"status": "ok", "service": "cards"}
