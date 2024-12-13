@@ -17,7 +17,7 @@ def create_mycard(
     db: Session = Depends(get_db),
     user: AuthUserResponse = Depends(validate_token),
 ):
-    # 중복 방지 로직
+    
     existing_mycard = db.query(crud.MyCard).filter(
         crud.MyCard.card_id == mycard.card_id,
         crud.MyCard.user_id == user.userId
@@ -25,7 +25,6 @@ def create_mycard(
     if existing_mycard:
         raise ApplicationException(status_code=400, detail="Card already added")
 
-    # user_id를 입력 데이터에 추가
     db_mycard = crud.MyCard(card_id=mycard.card_id, user_id=user.userId)
     created_mycard = crud.create_mycard(db=db, mycard=db_mycard)
     return ApiResponse.ok(data=created_mycard)
