@@ -4,6 +4,7 @@ from domain.mycard.schemas import MyCardCreate, BenefitResponse, CardResponse
 from collections import defaultdict
 from sqlalchemy import or_
 from rapidfuzz.fuzz import partial_ratio, token_sort_ratio, token_set_ratio
+from rapidfuzz import process
 from fastapi import HTTPException
 
 def create_mycard(db: Session, mycard: MyCardCreate, user_id: int):
@@ -54,19 +55,40 @@ def calculate_similarity(query, text):
         token_set_ratio(query, text)
     )
 
+def correct_query(query, candidates, threshold=70):
+    """
+    검색어를 후보군과 비교하여 가장 유사한 단어를 반환.
+    """
+    match = process.extractOne(query, candidates, score_cutoff=threshold)
+    if match:
+        return match[0]  # 가장 유사한 단어 반환
+    return query  # 유사한 단어가 없으면 원본 검색어 반환
+
 def search_cards(db: Session, query: str):
-    # 방어적 쿼리 검사
     if not query or len(query.strip()) < 1:
         return []
 
     query = query.strip()
 
-    # 데이터베이스에서 모든 카드 가져오기
-    all_cards = db.query(Card).all()
+    # 카드 이름과 회사 이름 후보군 가져오기
+    card_names = [card.name for card in db.query(Card.name).distinct()]
+    company_names = [card.company for card in db.query(Card.company).distinct()]
+    candidates = card_names + company_names
 
-    # 유사도 계산 및 랭킹
+    # 검색어 보정
+    corrected_query = correct_query(query, candidates)
+
+    # SQLAlchemy 데이터베이스 검색
+    filtered_cards = db.query(Card).filter(
+        or_(
+            Card.name.ilike(f"%{corrected_query}%"),
+            Card.company.ilike(f"%{corrected_query}%")
+        )
+    ).limit(100).all()
+
+    # Python에서 유사도 계산 및 랭킹
     ranked_cards = []
-    for card in all_cards:
+    for card in filtered_cards:
         name_similarity = calculate_similarity(query, card.name)
         company_similarity = calculate_similarity(query, card.company)
         score = max(name_similarity, company_similarity)
