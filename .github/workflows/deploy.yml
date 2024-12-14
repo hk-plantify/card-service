@@ -38,7 +38,6 @@ jobs:
         # Build image with multiple tags
         docker build . \
           --file Dockerfile \
-          --tag ${{ secrets.DOCKER_USERNAME }}/card-service:latest \
           --tag ${{ secrets.DOCKER_USERNAME }}/card-service:$BUILD_NUMBER
         
         # Store tags in environment
@@ -46,11 +45,9 @@ jobs:
     
     - name: Push Docker image
       run: |
-        docker push ${{ secrets.DOCKER_USERNAME }}/card-service:latest
         docker push ${{ secrets.DOCKER_USERNAME }}/card-service:${{ env.BUILD_NUMBER }}
 
     - name: Output pushed tags
       run: |
         echo "Pushed Docker image tags:"
-        echo "  - latest"
         echo "  - ${{ env.BUILD_NUMBER }}"
