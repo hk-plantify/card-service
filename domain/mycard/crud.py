@@ -61,26 +61,21 @@ def search_cards(db: Session, query: str):
 
     query = query.strip()
 
-    # SQLAlchemy를 활용한 초기 필터링
-    filtered_cards = db.query(Card).filter(
-        or_(
-            Card.name.ilike(f"%{query}%"),
-            Card.company.ilike(f"%{query}%")
-        )
-    ).limit(100).all()  # 초기 필터링 및 결과 제한
+    # 데이터베이스에서 모든 카드 가져오기
+    all_cards = db.query(Card).all()
 
     # 유사도 계산 및 랭킹
     ranked_cards = []
-    for card in filtered_cards:
+    for card in all_cards:
         name_similarity = calculate_similarity(query, card.name)
         company_similarity = calculate_similarity(query, card.company)
         score = max(name_similarity, company_similarity)
 
         # 이름 또는 회사 이름에 정확히 포함된 경우 가중치 추가
         if query.lower() in card.name.lower():
-            score += 15  # 이름에 정확히 포함된 경우 가중치 부여
+            score += 15
         if query.lower() in card.company.lower():
-            score += 10  # 회사 이름에 정확히 포함된 경우 가중치 부여
+            score += 10
 
         ranked_cards.append((card, score))
 
