@@ -55,7 +55,7 @@ def calculate_similarity(query, text):
         token_set_ratio(query, text)
     )
 
-def correct_query(query, candidates, threshold=60):
+def correct_query(query, candidates, threshold=50):
     """
     검색어를 후보군과 비교하여 유사한 단어 리스트를 반환.
     """
