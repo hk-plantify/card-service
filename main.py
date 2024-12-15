@@ -17,6 +17,10 @@ app.add_middleware(
     allow_headers=["*"],  # 모든 헤더 허용
 )
 
+@app.get("/")
+def root():
+    return {"message": "Welcome to the Card Service API"}
+
 app.include_router(mycard_router)
 app.include_router(card_router)
 
