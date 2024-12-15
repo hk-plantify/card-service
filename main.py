@@ -20,10 +20,6 @@ app.add_middleware(
 app.include_router(mycard_router)
 app.include_router(card_router)
 
-@app.get("/")
-def root():
-    return {"message": "Welcome to the Card API. Please use the proper endpoints."}
-
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8080, reload=True)
+    uvicorn.run(app, host="0.0.0.0", port=8080)
