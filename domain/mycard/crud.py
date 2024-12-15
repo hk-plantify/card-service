@@ -85,7 +85,7 @@ def search_cards(db: Session, query: str):
         for corrected_query in corrected_queries
     ]
 
-    filtered_cards = db.query(Card).filter(or_(*filters)).limit(100).all()
+    filtered_cards = db.query(Card).filter(or_(*filters)).limit(300).all()
 
     # Python에서 유사도 계산 및 랭킹
     ranked_cards = []

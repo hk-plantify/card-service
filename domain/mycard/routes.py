@@ -76,10 +76,6 @@ def delete_mycard(
     )
     return ApiResponse.ok(data=response_data)
 
-@mycard_router.get("/healthz", response_model=ApiResponse[dict])
-def health_check_mycards():
-    return {"status": "ok", "service": "mycards"}
-
 card_router = APIRouter(prefix="/v1/cards", tags=["Cards"])
 
 @card_router.get("/search", response_model=ApiResponse[list[dict]])
@@ -121,7 +117,3 @@ def get_card_with_benefits_api(
     if not card:
         raise ApplicationException(status_code=404, detail="Card not found")
     return ApiResponse.ok(data=card)
-
-@card_router.get("/healthz", response_model=ApiResponse[dict])
-def health_check_cards():
-    return {"status": "ok", "service": "cards"}
