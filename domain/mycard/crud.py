@@ -3,40 +3,22 @@ from sqlalchemy.orm import Session
 from domain.mycard.models import MyCard, Card, Benefit
 from domain.mycard.schemas import MyCardCreate, BenefitResponse, CardResponse
 from collections import defaultdict
-from sqlalchemy import or_, and_
+from sqlalchemy import or_
 from rapidfuzz.fuzz import partial_ratio, token_sort_ratio, token_set_ratio
 from rapidfuzz import process
 from fastapi import HTTPException
-from sqlalchemy.exc import SQLAlchemyError
 
 
 def create_mycards(db: Session, card_ids: List[int], user_id: int):
-    try:
-        existing_ids = set(
-            db.query(MyCard.card_id)
-            .filter(
-                and_(MyCard.card_id.in_(card_ids), MyCard.user_id == user_id)
-            )
-            .all()
-        )
-        existing_ids = {id_tuple[0] for id_tuple in existing_ids}
-        
-        new_ids = [card_id for card_id in card_ids if card_id not in existing_ids]
-
-        db_mycards = [
-            MyCard(card_id=card_id, user_id=user_id) for card_id in new_ids
-        ]
-        
-        db.add_all(db_mycards)
-        db.commit()
-        
-        for db_mycard in db_mycards:
-            db.refresh(db_mycard)
-        
-        return db_mycards
-    except SQLAlchemyError as e:
-        db.rollback()
-        raise ValueError(f"MyCard 항목 생성 중 에러 발생: {e}")
+    db_mycards = []
+    for card_id in card_ids:
+        db_mycard = MyCard(card_id=card_id, user_id=user_id)
+        db.add(db_mycard)
+        db_mycards.append(db_mycard)
+    db.commit()
+    for db_mycard in db_mycards:
+        db.refresh(db_mycard)
+    return db_mycards
 
 def get_all_mycards(db: Session):
     return db.query(MyCard).all()
