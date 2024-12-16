@@ -96,9 +96,9 @@ def search_cards(db: Session, query: str):
 
         # 이름 또는 회사 이름에 정확히 포함된 경우 가중치 추가
         if query.lower() in card.name.lower():
-            score += 15
+            score += 25
         if query.lower() in card.company.lower():
-            score += 10
+            score += 20
 
         ranked_cards.append((card, score))
 
