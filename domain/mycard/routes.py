@@ -12,7 +12,7 @@ from common.exception.exception import ApplicationException
 
 mycard_router = APIRouter(prefix="/v1/mycards", tags=["MyCards"])
 
-@mycard_router.post("", response_model=ApiResponse[MyCardResponse])
+@mycard_router.post("", response_model=ApiResponse[List[MyCardResponse]])
 def create_mycard(
     mycards: List[int],
     db: Session = Depends(get_db),
@@ -26,8 +26,8 @@ def create_mycard(
 
         card_response = CardResponse(
             card_id=card.card_id,
-            card_name=card.card_name,
-            card_image=card.card_image,
+            card_name=card.name,
+            card_image=card.image,
             company=card.company,
             type=card.type,
             benefits=[benefit.title for benefit in card.benefits],
@@ -74,8 +74,8 @@ def delete_mycard(
         card_id=mycard.card_id,
         card=CardResponse(
             card_id=mycard.card.card_id,
-            card_name=mycard.card.card_name,
-            card_image=mycard.card.card_image,
+            card_name=mycard.card.name,
+            card_image=mycard.card.image,
             company=mycard.card.company,
             type=mycard.card.type,
             benefits=[benefit.title for benefit in mycard.card.benefits]  # 변환
