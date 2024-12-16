@@ -13,8 +13,8 @@ class Card(Base):
     __tablename__ = 'card'
 
     card_id = Column(INTEGER(unsigned=True), primary_key=True, index=True)
-    name = Column(String(100), index=True)
-    image = Column(String(255))
+    card_name = Column(String(100), index=True)
+    card_image = Column(String(255))
     company = Column(String(100), index=True)
     type = Column(ENUM('credit', 'check'))  # Enum 타입 적용
     hash_key = Column(String(36), unique=True)

@@ -2,8 +2,8 @@ from pydantic import BaseModel
 from typing import List, Optional
 
 class CardBase(BaseModel):
-    name: str
-    image: Optional[str] = None
+    card_name: str
+    card_image: Optional[str] = None
     company: str
     type: str
 

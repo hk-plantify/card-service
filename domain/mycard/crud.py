@@ -46,8 +46,8 @@ def get_card_with_benefits(db: Session, card_id: int):
 
     card_response = CardResponse(
         card_id=card.card_id,
-        name=card.name,
-        image=card.image,
+        card_name=card.card_name,
+        card_image=card.card_image,
         company=card.company,
         type=card.type,
         benefits=benefits_response
@@ -75,7 +75,7 @@ def search_cards(db: Session, query: str):
     query = query.strip()
 
     # 카드 이름과 회사 이름 후보군 가져오기
-    card_names = [card.name for card in db.query(Card.name).distinct()]
+    card_names = [card.card_name for card in db.query(Card.card_name).distinct()]
     company_names = [card.company for card in db.query(Card.company).distinct()]
     candidates = card_names + company_names
 
@@ -85,7 +85,7 @@ def search_cards(db: Session, query: str):
     # SQLAlchemy 필터링
     filters = [
         or_(
-            Card.name.like(f"%{corrected_query}%"),  # LIKE 사용
+            Card.card_name.like(f"%{corrected_query}%"),  # LIKE 사용
             Card.company.like(f"%{corrected_query}%")  # LIKE 사용
         )
         for corrected_query in corrected_queries
@@ -96,12 +96,12 @@ def search_cards(db: Session, query: str):
     # Python에서 유사도 계산 및 랭킹
     ranked_cards = []
     for card in filtered_cards:
-        name_similarity = calculate_similarity(query, card.name)
+        name_similarity = calculate_similarity(query, card.card_name)
         company_similarity = calculate_similarity(query, card.company)
         score = max(name_similarity, company_similarity)
 
         # 이름 또는 회사 이름에 정확히 포함된 경우 가중치 추가
-        if query.lower() in card.name.lower():
+        if query.lower() in card.card_name.lower():
             score += 25
         if query.lower() in card.company.lower():
             score += 20
