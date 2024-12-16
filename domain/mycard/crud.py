@@ -1,3 +1,4 @@
+from typing import List
 from sqlalchemy.orm import Session
 from domain.mycard.models import MyCard, Card, Benefit
 from domain.mycard.schemas import MyCardCreate, BenefitResponse, CardResponse
@@ -7,12 +8,17 @@ from rapidfuzz.fuzz import partial_ratio, token_sort_ratio, token_set_ratio
 from rapidfuzz import process
 from fastapi import HTTPException
 
-def create_mycard(db: Session, mycard: MyCardCreate, user_id: int):
-    db_mycard = MyCard(card_id=mycard.card_id, user_id=user_id)
-    db.add(db_mycard)
+
+def create_mycards(db: Session, card_ids: List[int], user_id: int):
+    db_mycards = []
+    for card_id in card_ids:
+        db_mycard = MyCard(card_id=card_id, user_id=user_id)
+        db.add(db_mycard)
+        db_mycards.append(db_mycard)
     db.commit()
-    db.refresh(db_mycard)
-    return db_mycard
+    for db_mycard in db_mycards:
+        db.refresh(db_mycard)
+    return db_mycards
 
 def get_all_mycards(db: Session):
     return db.query(MyCard).all()

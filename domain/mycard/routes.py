@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from database.database import get_db
@@ -13,26 +14,32 @@ mycard_router = APIRouter(prefix="/v1/mycards", tags=["MyCards"])
 
 @mycard_router.post("", response_model=ApiResponse[MyCardResponse])
 def create_mycard(
-    mycard: MyCardCreate,
+    mycards: List[int],
     db: Session = Depends(get_db),
     user: AuthUserResponse = Depends(validate_token),
 ):
-    created_mycard = crud.create_mycard(db=db, mycard=mycard, user_id=user.userId)
-    card = created_mycard.card
+    created_mycards = crud.create_mycards(db=db, card_ids=mycards, user_id=user.userId)
+    response_data = []
 
-    card_response = CardResponse(
-        card_id=card.card_id,
-        name=card.name,
-        image=card.image,
-        company=card.company,
-        type=card.type,
-        benefits=[benefit.title for benefit in card.benefits]
-    )
-    response_data = MyCardResponse(
-        myCard_id=created_mycard.myCard_id,
-        card_id=created_mycard.card_id,
-        card=card_response
-    )
+    for created_mycard in created_mycards:
+        card = created_mycard.card
+
+        card_response = CardResponse(
+            card_id=card.card_id,
+            name=card.name,
+            image=card.image,
+            company=card.company,
+            type=card.type,
+            benefits=[benefit.title for benefit in card.benefits],
+        )
+        response_data.append(
+            MyCardResponse(
+                myCard_id=created_mycard.myCard_id,
+                card_id=created_mycard.card_id,
+                card=card_response,
+            )
+        )
+
     return ApiResponse.ok(data=response_data)
 
 @mycard_router.get("", response_model=ApiResponse[list[MyCardResponse]])
