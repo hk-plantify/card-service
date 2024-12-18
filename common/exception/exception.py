@@ -11,3 +11,7 @@ class AuthErrorCode:
     UNSUPPORTED_TOKEN = (HTTP_400_BAD_REQUEST, "지원되지 않는 토큰 형식입니다.")
     TOKEN_CLAIMS_EMPTY = (HTTP_400_BAD_REQUEST, "토큰의 클레임이 비어 있습니다.")
     ACCESS_TOKEN_NULL = (HTTP_400_BAD_REQUEST, "액세스 토큰이 비어 있습니다.")
+
+class CardErrorCode:
+    CARD_NOT_FOUND = (HTTP_400_BAD_REQUEST, "카드를 찾을 수 없습니다.")
+    MYCARD_NOT_FOUND = (HTTP_400_BAD_REQUEST, "내 카드를 찾을 수 없습니다.")

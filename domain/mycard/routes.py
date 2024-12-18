@@ -5,7 +5,7 @@ from database.database import get_db
 from domain.auth.oauth import validate_token
 from domain.auth.schemas import AuthUserResponse
 from domain.mycard import crud
-from domain.mycard.schemas import MyCardCreate, MyCardResponse, CardResponse
+from domain.mycard.schemas import MyCardResponse, CardResponse
 from domain.mycard.crud import get_card_with_benefits, search_cards
 from common.response.response import ApiResponse
 from common.exception.exception import ApplicationException
@@ -43,8 +43,11 @@ def create_mycard(
     return ApiResponse.ok(data=response_data)
 
 @mycard_router.get("", response_model=ApiResponse[list[MyCardResponse]])
-def get_all_mycards(db: Session = Depends(get_db)):
-    mycards = crud.get_all_mycards(db=db)
+def get_all_mycards(
+        db: Session = Depends(get_db),
+        user: AuthUserResponse = Depends(validate_token)
+):
+    mycards = crud.get_all_mycards_by_user_id(db=db, user_id=user.userId)
     mycards_response = []
 
     for mycard in mycards:

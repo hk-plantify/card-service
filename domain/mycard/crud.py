@@ -1,12 +1,13 @@
 from typing import List
 from sqlalchemy.orm import Session
+
+from common.exception.exception import ApplicationException, CardErrorCode
 from domain.mycard.models import MyCard, Card, Benefit
 from domain.mycard.schemas import MyCardCreate, BenefitResponse, CardResponse
 from collections import defaultdict
 from sqlalchemy import or_
 from rapidfuzz.fuzz import partial_ratio, token_sort_ratio, token_set_ratio
 from rapidfuzz import process
-from fastapi import HTTPException
 
 
 def create_mycards(db: Session, card_ids: List[int], user_id: int):
@@ -20,26 +21,32 @@ def create_mycards(db: Session, card_ids: List[int], user_id: int):
         db.refresh(db_mycard)
     return db_mycards
 
-def get_all_mycards(db: Session):
-    return db.query(MyCard).all()
+def get_all_mycards_by_user_id(db: Session, user_id: int):
+    db_mycards = db.query(MyCard).filter(MyCard.user_id == user_id)
+
+    if db_mycards.get("status") != 200 or "data" not in db_mycards:
+        raise ApplicationException(*CardErrorCode.MYCARD_NOT_FOUND)
+
+    return db.query(db_mycards).all()
 
 def delete_mycard(db: Session, mycard_id: int, user_id: int):
     db_mycard = db.query(MyCard).filter(
         MyCard.myCard_id == mycard_id, MyCard.user_id == user_id
     ).first()
-    if not db_mycard:
-        raise HTTPException(
-            status_code=404,
-            detail=f"Debug: MyCard not found. myCard_id={mycard_id}, user_id={user_id}"
-        )
+
+    if db_mycard.get("status") != 200 or "data" not in db_mycard:
+        raise ApplicationException(*CardErrorCode.MYCARD_NOT_FOUND)
+
     db.delete(db_mycard)
     db.commit()
     return db_mycard
 
 def get_card_with_benefits(db: Session, card_id: int):
     card = db.query(Card).filter(Card.card_id == card_id).first()
-    if not card:
-        return None
+
+    if card.get("status") != 200 or "data" not in card:
+        raise ApplicationException(*CardErrorCode.CARD_NOT_FOUND)
+
     # benefits에서 title만 추출
     benefits = db.query(Benefit).filter(Benefit.card_id == card_id).all()
     benefits_response = [benefit.title for benefit in benefits]
