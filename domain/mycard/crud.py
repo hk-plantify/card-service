@@ -27,7 +27,7 @@ def get_all_mycards_by_user_id(db: Session, user_id: int):
     if not db_mycards:
         raise ApplicationException(*CardErrorCode.MYCARD_NOT_FOUND)
 
-    return db.query(db_mycards).all()
+    return db_mycards
 
 def delete_mycard(db: Session, mycard_id: int, user_id: int):
     db_mycard = db.query(MyCard).filter(
