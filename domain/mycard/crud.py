@@ -24,7 +24,7 @@ def create_mycards(db: Session, card_ids: List[int], user_id: int):
 def get_all_mycards_by_user_id(db: Session, user_id: int):
     db_mycards = db.query(MyCard).filter(MyCard.user_id == user_id)
 
-    if db_mycards.get("status") != 200 or "data" not in db_mycards:
+    if not db_mycards:
         raise ApplicationException(*CardErrorCode.MYCARD_NOT_FOUND)
 
     return db.query(db_mycards).all()
@@ -34,7 +34,7 @@ def delete_mycard(db: Session, mycard_id: int, user_id: int):
         MyCard.myCard_id == mycard_id, MyCard.user_id == user_id
     ).first()
 
-    if db_mycard.get("status") != 200 or "data" not in db_mycard:
+    if not db_mycard:
         raise ApplicationException(*CardErrorCode.MYCARD_NOT_FOUND)
 
     db.delete(db_mycard)
@@ -44,7 +44,7 @@ def delete_mycard(db: Session, mycard_id: int, user_id: int):
 def get_card_with_benefits(db: Session, card_id: int):
     card = db.query(Card).filter(Card.card_id == card_id).first()
 
-    if card.get("status") != 200 or "data" not in card:
+    if not card:
         raise ApplicationException(*CardErrorCode.CARD_NOT_FOUND)
 
     # benefits에서 title만 추출
