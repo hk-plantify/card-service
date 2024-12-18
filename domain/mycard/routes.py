@@ -92,6 +92,7 @@ card_router = APIRouter(prefix="/v1/cards", tags=["Cards"])
 def search_cards_api(
     query: str,
     db: Session = Depends(get_db),
+    user: AuthUserResponse = Depends(validate_token)
 ):
     """
     검색된 카드와 함께 추가 가능 여부 반환.
@@ -100,7 +101,7 @@ def search_cards_api(
     cards = search_cards(db=db, query=query)
 
     # 사용자가 이미 MyCards에 추가한 카드 목록
-    user_mycards = crud.get_all_mycards_by_user_id(db=db)
+    user_mycards = crud.get_all_mycards_by_user_id(db=db, user_id=user.userId)
     user_card_ids = {mycard.card_id for mycard in user_mycards}
 
     simplified_cards = []
