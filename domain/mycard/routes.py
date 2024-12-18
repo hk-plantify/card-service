@@ -100,7 +100,7 @@ def search_cards_api(
     cards = search_cards(db=db, query=query)
 
     # 사용자가 이미 MyCards에 추가한 카드 목록
-    user_mycards = crud.get_all_mycards(db=db)
+    user_mycards = crud.get_all_mycards_by_user_id(db=db)
     user_card_ids = {mycard.card_id for mycard in user_mycards}
 
     simplified_cards = []
