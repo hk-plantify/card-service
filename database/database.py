@@ -1,32 +1,27 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from dotenv import load_dotenv
-import os
+from config.config import SQLALCHEMY_DATABASE_URL, BASE_DATABASE_URL
 
-load_dotenv()
+# 데이터베이스 생성용 엔진
+init_engine = create_engine(BASE_DATABASE_URL)
 
-USERNAME = os.getenv("USERNAME")
-PASSWORD = os.getenv("PASSWORD")
-HOST = os.getenv("HOST")
-PORT = os.getenv("PORT")
-DBNAME = os.getenv("DBNAME")
+# 데이터베이스 생성
+with init_engine.connect() as connection:
+    connection.execute(text("CREATE DATABASE IF NOT EXISTS `card-db`;"))
 
-SQLALCHEMY_DATABASE_URL = "mysql+pymysql://{}:{}@{}:{}/{}".format(
-    USERNAME, PASSWORD, HOST, PORT, DBNAME
-)
+# 초기화 엔진 닫기
+init_engine.dispose()
 
+# 실제 사용할 SQLAlchemy 엔진
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
 Base = declarative_base()
 
 def get_db():
     db = SessionLocal()
     try:
         yield db
-
     finally:
         db.close()
-
